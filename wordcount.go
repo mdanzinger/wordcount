@@ -1,62 +1,82 @@
 package wordcount
 
 import (
-	"io"
-	"strings"
 	"bytes"
-	"io/ioutil"
+	"io"
 	"log"
-	"fmt"
+	"regexp"
+	"sort"
+	"strings"
 )
-
 
 type Words []Word
 
 type Word struct {
-	Word string
+	Word  string
 	Count int
 }
 
-func MostFrequent(r io.Reader) map[string]int {
+func (w Words) Len() int {
+	return len(w)
+}
+func (w Words) Less(i, j int) bool {
+	return w[i].Count > w[j].Count
+}
+func (w Words) Swap(i, j int) {
+	w[i], w[j] = w[j], w[i]
+}
+
+func MostFrequent(r io.Reader, stripStopWords bool) Words {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(r)
 
-	//bufstring := buf.String()
-
-	bufstring := string(removeStopWords(buf.Bytes()))
-
-	words := strings.Fields(bufstring)
-	m := make(map[string]int)
-	for _, word := range words {
-		m[word] += 1
+	// Regex to strip all non-alphanumeric characters
+	reg, err := regexp.Compile("[^a-zA-Z0-9 ]+")
+	if err != nil {
+		log.Fatal(err)
 	}
-	return m
+	processedContent := reg.ReplaceAll(buf.Bytes(), []byte(" "))
+	if stripStopWords {
+		processedContent = removeStopWords(processedContent)
+	}
+
+	words := bytes.Fields(processedContent)
+	m := make(map[string]int)
+
+	for _, word := range words {
+		m[string(word)] += 1
+	}
+	//return m
+	w := collectTopWords(m, 100)
+
+	return w
 }
 
-
 func removeStopWords(content []byte) []byte {
-	var result string
-	result = strings.ToLower(string(content))
-	fmt.Println("Content: " + result)
-	stopfile, err := ioutil.ReadFile("stopwords.txt")
-	if err != nil {
-		log.Printf("Error opening file: %s", err)
+	var buffer bytes.Buffer
+	contentStr := strings.Fields(strings.ToLower(string(content)))
+
+	for _, word := range contentStr {
+		if _, ok := stopwords[word]; ok {
+			buffer.WriteString("")
+		} else {
+			buffer.WriteString(word + " ")
+		}
 	}
 
-	stopwords := strings.Split(string(stopfile), "\n")
-	for i, word:= range stopwords{
-		//re := regexp.MustCompile(`(?i)\b`+word+`\b`)
-		//result = re.ReplaceAllString(result, "")
-		if i == 1 {
-			result = strings.Replace(string(result), word+" ", " ", -1)
-		}
-		if i == len(stopwords) - 1 {
-			fmt.Println("whaaa")
-			result = strings.Replace(string(result), " "+word, " ", -1)
-		}
-		result = strings.Replace(string(result), " "+word + " ", " ", -1)
-	}
+	//fmt.Println(buffer.String())
+	return buffer.Bytes()
+}
 
-	fmt.Println(result)
-	return nil
+func collectTopWords(wordMap map[string]int, top int) Words {
+	words := Words{}
+	for word, count := range wordMap {
+		words = append(words, Word{Word: word, Count: count})
+	}
+	sort.Sort(words)
+
+	if top >= len(words) {
+		return words
+	}
+	return words[:top]
 }

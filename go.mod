@@ -1,1 +1,1 @@
-module wordcount
+module golang/wordcount

@@ -1,19 +1,23 @@
-package wordcount
+package test
 
 import (
+	"bytes"
+	"reflect"
 	"testing"
 
-	"reflect"
-	"bytes"
+	//"testing"
+	"golang/wordcount"
+	//"reflect"
+	//"bytes"
 )
 
 func TestMostFrequent(t *testing.T) {
 	expects := map[string]int{
-		"fox" : 1,
-		"did" : 1,
-		"something" : 1,
-		"somewhere" : 1,
-		"The" : 1,
+		"fox":       1,
+		"did":       0, // Stop word
+		"something": 0, // Stop word
+		"somewhere": 1,
+		"The":       1,
 	}
 	b := []byte("The fox did something somewhere")
 	s := bytes.NewReader(b)
@@ -22,7 +26,7 @@ func TestMostFrequent(t *testing.T) {
 	//	t.Errorf("Can't open test content")
 	//}
 
-	words := MostFrequent(s)
+	words := wordcount.MostFrequent(s, true)
 
 	if !reflect.DeepEqual(words, expects) {
 		t.Errorf("Words is nil")
