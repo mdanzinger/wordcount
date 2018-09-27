@@ -31,7 +31,7 @@ func MostFrequent(r io.Reader, stripStopWords bool) Words {
 	buf.ReadFrom(r)
 
 	// Regex to strip all non-alphanumeric characters
-	reg, err := regexp.Compile("[^a-zA-Z0-9 ]+")
+	reg, err := regexp.Compile("[^a-zA-Z ]+| +")
 	if err != nil {
 		log.Fatal(err)
 	}

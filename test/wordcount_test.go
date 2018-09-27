@@ -1,12 +1,12 @@
 package test
 
 import (
-	"bytes"
+	"os"
 	"reflect"
 	"testing"
 
 	//"testing"
-	"golang/wordcount"
+	"github.com/mdanzinger/wordcount"
 	//"reflect"
 	//"bytes"
 )
@@ -19,14 +19,14 @@ func TestMostFrequent(t *testing.T) {
 		"somewhere": 1,
 		"The":       1,
 	}
-	b := []byte("The fox did something somewhere")
-	s := bytes.NewReader(b)
-	//f, err := os.Open("content_test.txt")
-	//if err != nil {
-	//	t.Errorf("Can't open test content")
-	//}
+	//b := []byte("The fox did something somewhere")
+	//s := bytes.NewReader(b)
+	f, err := os.Open("content_test.txt")
+	if err != nil {
+		t.Errorf("Can't open test content")
+	}
 
-	words := wordcount.MostFrequent(s, true)
+	words := wordcount.MostFrequent(f, true)
 
 	if !reflect.DeepEqual(words, expects) {
 		t.Errorf("Words is nil")
