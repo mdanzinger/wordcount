@@ -1,1 +1,1 @@
-module golang/wordcount
+module github.com/mdanzinger/wordcount
