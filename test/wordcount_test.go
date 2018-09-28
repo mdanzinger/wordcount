@@ -1,8 +1,7 @@
 package test
 
 import (
-	"os"
-	"reflect"
+	"bytes"
 	"testing"
 
 	//"testing"
@@ -13,22 +12,27 @@ import (
 
 func TestMostFrequent(t *testing.T) {
 	expects := map[string]int{
-		"fox":       1,
-		"did":       0, // Stop word
-		"something": 0, // Stop word
-		"somewhere": 1,
-		"The":       1,
+		"fox":   2,
+		"smart": 1,
 	}
-	//b := []byte("The fox did something somewhere")
-	//s := bytes.NewReader(b)
-	f, err := os.Open("content_test.txt")
-	if err != nil {
-		t.Errorf("Can't open test content")
-	}
+	b := []byte("The smart fox fox did something somewhere")
+	s := bytes.NewReader(b)
+	//f, err := os.Open("content_test.txt")
+	//if err != nil {
+	//	t.Errorf("Can't open test content")
+	//}
+	//
+	words := wordcount.MostFrequent(s, 5)
 
-	words := wordcount.MostFrequent(f, true)
+	//for _, w := range words {
+	//	fmt.Printf("Word: %s %v \n", w.Word, w.Count)
+	//}
 
-	if !reflect.DeepEqual(words, expects) {
-		t.Errorf("Words is nil")
+	for _, w := range words {
+		if ew, ok := expects[w.Word]; ok {
+			if ew != w.Count {
+				t.Errorf("Expected different values")
+			}
+		}
 	}
 }

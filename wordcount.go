@@ -9,24 +9,26 @@ import (
 	"strings"
 )
 
-type Words []Word
+// MostFrequent returns a map of the most frequently used words excluding common stopwords
+func MostFrequent(r io.Reader, n int) Words {
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(r)
 
-type Word struct {
-	Word  string
-	Count int
+	// Regex to strip all non-alphanumeric characters
+	reg, err := regexp.Compile("[^a-zA-Z ]+| +")
+	if err != nil {
+		log.Fatal(err)
+	}
+	processedContent := removeStopWords(reg.ReplaceAll(buf.Bytes(), []byte(" ")))
+
+	wordCount := collectTopWords(countTopWords(processedContent), n)
+
+	return wordCount
+
 }
 
-func (w Words) Len() int {
-	return len(w)
-}
-func (w Words) Less(i, j int) bool {
-	return w[i].Count > w[j].Count
-}
-func (w Words) Swap(i, j int) {
-	w[i], w[j] = w[j], w[i]
-}
-
-func MostFrequent(r io.Reader, stripStopWords bool) Words {
+// MostFrequentAll returns a map of the most frequently used words including all stopwords.
+func MostFrequentAll(r io.Reader, n int) Words {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(r)
 
@@ -36,20 +38,21 @@ func MostFrequent(r io.Reader, stripStopWords bool) Words {
 		log.Fatal(err)
 	}
 	processedContent := reg.ReplaceAll(buf.Bytes(), []byte(" "))
-	if stripStopWords {
-		processedContent = removeStopWords(processedContent)
-	}
 
-	words := bytes.Fields(processedContent)
+	wordCount := collectTopWords(countTopWords(processedContent), n)
+
+	return wordCount
+}
+
+func countTopWords(c []byte) map[string]int {
+	words := bytes.Fields(c)
 	m := make(map[string]int)
 
 	for _, word := range words {
 		m[string(word)] += 1
 	}
-	//return m
-	w := collectTopWords(m, 100)
 
-	return w
+	return m
 }
 
 func removeStopWords(content []byte) []byte {
@@ -75,7 +78,7 @@ func collectTopWords(wordMap map[string]int, top int) Words {
 	}
 	sort.Sort(words)
 
-	if top >= len(words) {
+	if top >= len(words) || top == 0 {
 		return words
 	}
 	return words[:top]
