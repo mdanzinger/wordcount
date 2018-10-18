@@ -4,7 +4,7 @@ wordcount is a useless little library I made to recieve the most frequently used
 
 
 Examples :
-`
+```
 var mostFrequentWordsToGet = 10
 someText := []byte("The smart fox fox did something somewhere")
 someTextReader := bytes.NewReader(someText)
@@ -14,4 +14,4 @@ words := wordcount.MostFrequent(someTextReader, mostFrequentWordsToGet)
 for _, w := range words {
 	 fmt.Printf(w)
 	}
-`
+```
